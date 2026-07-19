@@ -1,0 +1,87 @@
+{
+  "@context": "https://etzhayyim.com/ns/kotodama/v1",
+  "@id": "did:web:cowork-graph.etzhayyim.com",
+  "name": "cowork-graph",
+  "nanoid": "c0w0rkg1",
+  "performerType": "service",
+  "runtimeType": "worker",
+  "sensitivity": "internal",
+  "source": "custom",
+  "version": "0.1.0",
+  "build": {
+    "guestLanguage": "ts"
+  },
+  "component": {
+    "path": "src/app.ts"
+  },
+  "profile": {
+    "displayName": "Cowork Graph Connector",
+    "description": "Claude Cowork 向け MCP ブリッジ。Microsoft Graph API (Mail/Teams/Files/Calendar/Users) と RisingWave graph への read-only アクセスを MCP tools として公開する。メール送信は draft_only、Teams 送信は delegated device code 認証が必要。",
+    "isBot": true,
+    "agentType": "capability-worker",
+    "operator": "etzhayyim.com",
+    "capabilities": [
+      "msgraph-mail",
+      "msgraph-teams",
+      "msgraph-files",
+      "msgraph-calendar",
+      "msgraph-users",
+      "risingwave-graph-read"
+    ]
+  },
+  "interfaces": {
+    "package": "etzhayyim:cowork-graph@1.0.0",
+    "requires": [
+      "etzhayyim:collection/collection@1.0.0"
+    ]
+  },
+  "governance": {
+    "raci": "responsible",
+    "classification": "internal"
+  },
+  "convoSystemPrompt": "あなたは Etzhayyim Japan の社内 MCP ブリッジです。Microsoft Graph API (Mail/Teams/Files/Calendar/Users) と RisingWave graph への安全なアクセスを提供します。メール送信は draft_only ルールに従い、承認なしに実際の送信は行いません。Teams メッセージ送信は delegated device code 認証が必要なため、このアクターでは対応しません。RisingWave への書き込みは一切行いません（read-only）。ユーザーの言語で回答してください。",
+  "duties": [
+    "勤労の義務"
+  ],
+  "kpi": [
+    "MCP tool 呼び出し成功率",
+    "Graph API トークン有効率"
+  ],
+  "deploy": {},
+  "routes": [
+    {
+      "host": "cowork-graph.etzhayyim.com",
+      "paths": ["/"],
+      "tls": true
+    }
+  ],
+  "space": {
+    "name": "Cowork Graph Connector",
+    "joinRule": "invite",
+    "historyVisibility": "invited",
+    "channels": [
+      {
+        "name": "tool-log",
+        "kind": "private",
+        "default": true
+      }
+    ]
+  },
+  "triggers": {
+    "subscribeRepos": {
+      "collections": [
+        "com.etzhayyim.apps.coworkGraph.syncJob",
+        "com.etzhayyim.apps.coworkGraph.mailDraft",
+        "com.etzhayyim.apps.coworkGraph.toolGrant"
+      ]
+    }
+  },
+  "ui": {
+    "accent": "#0078d4",
+    "icon": "🔗",
+    "ssrRoutes": {
+      "apps": "etzhayyim.coworkGraph.v1.CoworkGraphService/cowork-graph.tools"
+    }
+  },
+  "uiType": "appview"
+}

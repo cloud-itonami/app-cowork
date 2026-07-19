@@ -1,0 +1,51 @@
+{
+  "name": "kotodama-c0w0rkg1",
+  "main": "svelte/.svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2025-03-17",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "nodejs_als"
+  ],
+  "assets": {
+    "directory": "./svelte/.svelte-kit/cloudflare/client",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "vars": {
+    "APP_ACTOR_HANDLE": "cowork-graph",
+    "APP_CAPABILITIES": "[\"msgraph-mail\",\"msgraph-teams\",\"msgraph-files\",\"msgraph-calendar\",\"msgraph-users\",\"risingwave-graph-read\"]",
+    "APP_DEPLOY_AT": "2026-05-07T02:00:37Z",
+    "APP_DEPLOY_SHA": "06194f69d5d",
+    "APP_DESCRIPTION": "Claude Cowork 向け MCP ブリッジ。Microsoft Graph API (Mail/Teams/Files/Calendar/Users) と RisingWave graph への read-only アクセスを MCP tools として公開する。メール送信は draft_only、Teams 送信は delegated device code 認証が必要。",
+    "APP_DISPLAY_NAME": "Cowork Graph Connector",
+    "APP_EMBED_URL": "https://c0w0rkg1.etzhayyim.com/?embed=1",
+    "APP_FRAMEWORK": "sveltekit-edge-bff",
+    "APP_NANOID": "c0w0rkg1",
+    "APP_PERFORMER_TYPE": "service",
+    "APP_SOURCE": "custom",
+    "APP_TEMPLATE": "",
+    "APP_UI_TYPE": "appview",
+    "APP_VERSION": "0.1.0",
+    "INTERFACES_REQUIRES": "[\"etzhayyim:collection/collection@1.0.0\"]",
+    "AGENTGATEWAY_MCP_ROUTER_URL": "https://mcp.etzhayyim.com/xrpc/com.etzhayyim.mcp.message"
+  },
+  "rules": [
+    {
+      "type": "CompiledWasm",
+      "globs": [
+        "**/*.wasm"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "c0w0rkg1.etzhayyim.com/*",
+      "zone_name": "etzhayyim.com"
+    },
+    {
+      "pattern": "cowork-graph.etzhayyim.com/*",
+      "zone_name": "etzhayyim.com"
+    }
+  ]
+}

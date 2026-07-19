@@ -1,0 +1,70 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": "https://cowork.etzhayyim.com",
+  "name": "etzhayyim-project-cowork",
+  "description": "Etzhayyim Cowork - AI collaborative workspace with git-backed conversation persistence",
+  "url": "https://cowork.etzhayyim.com",
+  "applicationCategory": "Productivity",
+  "operatingSystem": "Kubernetes",
+  "author": {
+    "@type": "Organization",
+    "name": "etzhayyim",
+    "url": "https://etzhayyim.com"
+  },
+  "component": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "cowork",
+      "description": "Go backend - git-backed conversation storage with App runtime integration",
+      "applicationCategory": "Backend",
+      "programmingLanguage": "Go",
+      "runtimePlatform": "App runtime (Tier 2, Event-Driven)"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "cowork-ui",
+      "description": "SvelteKit static UI served via nginx",
+      "applicationCategory": "Frontend",
+      "programmingLanguage": "TypeScript",
+      "runtimePlatform": "nginx (Tier 3, Static)"
+    }
+  ],
+  "rdfUnifiedDocuments": {
+    "@type": "Dataset",
+    "name": "Unified top-level RDF/JSON-LD documents",
+    "description": "Consolidated from project top-level *.jsonld files except PROJECT.jsonld.",
+    "documents": [
+      {
+        "fileName": "scheduler.jsonld",
+        "content": {
+          "@context": [
+            "https://schema.org/",
+            {
+              "etzhayyim": "https://etzhayyim.com/schemas/",
+              "capabilities": "etzhayyim:capabilities",
+              "survivalIndicators": "etzhayyim:survivalIndicators",
+              "scheduler": "etzhayyim:scheduler",
+              "milestones": "etzhayyim:milestones",
+              "blockers": "etzhayyim:blockers",
+              "dependsOn": {
+                "@id": "etzhayyim:dependsOn",
+                "@type": "@id"
+              },
+              "ingestKey": "etzhayyim:ingestKey",
+              "window": "etzhayyim:window",
+              "valueUpdatedAt": "etzhayyim:valueUpdatedAt"
+            }
+          ],
+          "@type": "CreativeWork",
+          "name": "etzhayyim-project-cowork Scheduler",
+          "identifier": "etzhayyim-project-cowork/scheduler",
+          "description": "Project schedule (milestones) and blockers.",
+          "dateCreated": "2026-02-15T04:25:26+00:00",
+          "milestones": [],
+          "blockers": []
+        }
+      }
+    ]
+  }
+}
