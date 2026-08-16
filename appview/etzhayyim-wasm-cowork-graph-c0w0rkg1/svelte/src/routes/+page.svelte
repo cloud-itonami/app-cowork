@@ -4,11 +4,11 @@
   "project": "etzhayyim-project-cowork",
   "name": "etzhayyim-wasm-cowork-graph-c0w0rkg1",
   "kind": "appview",
-  "routeCount": 0,
-  "routes": [],
-  "vars": [],
+  "routeCount": 2,
+  "routes": ["c0w0rkg1.etzhayyim.com/*", "cowork-graph.etzhayyim.com/*"],
+  "vars": ["AGENTGATEWAY_MCP_ROUTER_URL", "APP_ACTOR_HANDLE", "APP_CAPABILITIES", "APP_DEPLOY_AT", "APP_DEPLOY_SHA", "APP_DESCRIPTION", "APP_DISPLAY_NAME", "APP_EMBED_URL", "APP_FRAMEWORK", "APP_NANOID", "APP_PERFORMER_TYPE", "APP_SOURCE", "APP_TEMPLATE", "APP_UI_TYPE", "APP_VERSION", "INTERFACES_REQUIRES"],
   "xrpc": true,
-  "relativePath": "60-apps/etzhayyim-project-cowork/appview/etzhayyim-wasm-cowork-graph-c0w0rkg1/svelte/src/routes/+page.svelte"
+  "relativePath": "appview/etzhayyim-wasm-cowork-graph-c0w0rkg1/svelte/src/routes/+page.svelte"
 };
 </script>
 
