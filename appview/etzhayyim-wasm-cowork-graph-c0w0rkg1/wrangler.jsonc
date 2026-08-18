@@ -1,17 +1,23 @@
 {
   "name": "kotodama-c0w0rkg1",
-  "main": "svelte/.svelte-kit/cloudflare/_worker.js",
+  // Compiled from src/cowork/worker.cljs by shadow-cljs (:target :esm).
+  // Before the cljs migration this pointed at
+  // "svelte/.svelte-kit/cloudflare/_worker.js" -- a path with zero tracked
+  // files -- and the 882-line src/app.ts a reader opened was in no bundle at
+  // all. See docs/adr/0001.
+  "main": "../../dist/worker.js",
   "compatibility_date": "2025-03-17",
+  // Kept from the SvelteKit era. They are NOT known to be unnecessary: the
+  // cljs bundle imports no node builtin, but that was verified by reading the
+  // bundle, not by booting workerd without the flags. Removing them is a
+  // separate change that has to be verified against the real runtime.
   "compatibility_flags": [
     "nodejs_compat",
     "nodejs_als"
   ],
-  "assets": {
-    "directory": "./svelte/.svelte-kit/cloudflare/client",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "none"
-  },
+  // The "assets" block is gone with the migration: it bound
+  // ./svelte/.svelte-kit/cloudflare/client, a SvelteKit build output that no
+  // longer exists. The Worker serves its one page itself.
   "vars": {
     "APP_ACTOR_HANDLE": "cowork-graph",
     "APP_CAPABILITIES": "[\"msgraph-mail\",\"msgraph-teams\",\"msgraph-files\",\"msgraph-calendar\",\"msgraph-users\",\"risingwave-graph-read\"]",
@@ -20,7 +26,7 @@
     "APP_DESCRIPTION": "Claude Cowork 向け MCP ブリッジ。Microsoft Graph API (Mail/Teams/Files/Calendar/Users) と RisingWave graph への read-only アクセスを MCP tools として公開する。メール送信は draft_only、Teams 送信は delegated device code 認証が必要。",
     "APP_DISPLAY_NAME": "Cowork Graph Connector",
     "APP_EMBED_URL": "https://c0w0rkg1.etzhayyim.com/?embed=1",
-    "APP_FRAMEWORK": "sveltekit-edge-bff",
+    "APP_FRAMEWORK": "cljs-esm-worker",
     "APP_NANOID": "c0w0rkg1",
     "APP_PERFORMER_TYPE": "service",
     "APP_SOURCE": "custom",

@@ -1,0 +1,25 @@
+;; app-cowork — the cowork-graph appview.
+;;
+;; The Worker is ClojureScript, per the repo-wide runtime order in the
+;; superproject CLAUDE.md (kotoba wasm > clojurewasm > ClojureScript > nbb).
+;; Keeping the entry in cljs rather than .kotoba is ADR-2606290000's standing
+;; call: kotoba's ingress capability is :native-aot/:wasm-aot pending. The
+;; decision-shaped parts live in .cljc so they are testable without a browser,
+;; and are the first thing that moves to .kotoba when ingress qualifies.
+{:paths ["src"]
+ :deps {io.github.kotoba-lang/jp-go-digital-design-system
+        {:git/url "https://github.com/kotoba-lang/jp-go-digital-design-system"
+         ;; The tip of kotoba-lang/main on 2026-08-18, which is also the
+         ;; checkout the nbb classpath in docs/operator-quickstart.md uses.
+         ;; Pinning a DIFFERENT sha than the tests run against would mean the
+         ;; page scored by the audit and the page inside the bundle are not
+         ;; the same page.
+         :git/sha "0a0218052b0d563057341a1c2ab310045052bd23"}}
+ :aliases
+ {:cljs {:extra-deps {org.clojure/clojurescript {:mvn/version "1.11.132"}
+                      thheller/shadow-cljs {:mvn/version "2.28.20"}}}
+  :test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]
+         :exec-fn cognitect.test-runner.api/test}}}

@@ -1,0 +1,29 @@
+;; The cowork-graph appview Worker. :esm, mirroring cloud-itonami-marketplace-listing
+;; and app-ongakuka.
+;;
+;; wrangler.jsonc's main points at dist/worker.js, which is THIS bundle compiled
+;; from the source in src/. That is the whole point of the migration recorded in
+;; docs/adr/0001: before it, main pointed at a SvelteKit build output
+;; (svelte/.svelte-kit/cloudflare/_worker.js, a path with zero tracked files),
+;; and the 882-line src/app.ts a reader opened was in no bundle at all.
+;; :warnings-as-errors is not decoration. Measured 2026-08-18: renaming
+;; `route/dispatch` to a var that does not exist made shadow print
+;; `WARNING #1 - :undeclared-var` and **exit 0**, writing a bundle that throws
+;; `Cannot read properties of undefined` on the first request. "The build
+;; succeeded" was therefore not a check at all -- it could not fail. Only the
+;; smoke test caught it (exit 2, refusing to report a pass).
+{:deps {:aliases [:cljs]}
+ :builds
+ {:worker
+  {:target :esm
+   :output-dir "dist"
+   :modules {:worker {:exports {default cowork.worker/handler}}}
+   ;; NOTE the key lives under :compiler-options, NOT :build-options -- shadow
+   ;; reads `[:compiler-options :warnings-as-errors]`
+   ;; (shadow/build/compiler.clj `should-warning-throw?`). Putting it under
+   ;; :build-options is silently ignored, which is the same failure this option
+   ;; exists to prevent. Measured: with it under :build-options the mutated
+   ;; build still exited 0.
+   :compiler-options {:output-feature-set :es2020
+                      :infer-externs :auto
+                      :warnings-as-errors true}}}}
