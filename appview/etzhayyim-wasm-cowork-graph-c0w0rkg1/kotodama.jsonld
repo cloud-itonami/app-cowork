@@ -9,10 +9,11 @@
   "source": "custom",
   "version": "0.1.0",
   "build": {
-    "guestLanguage": "ts"
+    "guestLanguage": "cljs"
   },
   "component": {
-    "path": "src/app.ts"
+    "path": "../../src/cowork/worker.cljs",
+    "bundle": "../../dist/worker.js"
   },
   "profile": {
     "displayName": "Cowork Graph Connector",

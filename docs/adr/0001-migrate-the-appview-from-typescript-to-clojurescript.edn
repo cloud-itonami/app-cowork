@@ -1,0 +1,204 @@
+[{:db/id -1
+  :adr/id "app-cowork-0001"
+  :adr/title "appview を TypeScript/Svelte から ClojureScript へ移す"
+  :adr/status "accepted"
+  :adr/date "2026-08-18"
+  :adr/doc_type "adr"
+  :adr/source-format "edn"
+  :adr/body "
+# ADR-0001: appview を TypeScript/Svelte から ClojureScript へ移す
+
+**Status**: accepted / **Date**: 2026-08-18 / **Deciders**: Jun Kawasaki
+
+## Context
+
+この repository は配線済みの Microsoft 365 統合に見えて、**汎用の proxy を
+deploy していた**。移行前に測った事実:
+
+1. `wrangler.jsonc` の `main` は `svelte/.svelte-kit/cloudflare/_worker.js` —
+   ビルド出力であり、`git ls-files` にこのパスの tracked file は **0 件**。
+2. 読み手が開く `appview/…/src/app.ts`（882 行、Microsoft Graph の MCP tool を
+   16 個宣言）は **どの bundle にも入っていなかった**。tree 全体で
+   `@etzhayyim/kotodama-host-sdk` という文字列は app.ts 自身の import 文にしか
+   無く、どの package.json もこのファイルを宣言していない。
+3. その 882 行は **as configured では動かない**。読む binding
+   （GRAPH_CLIENT_ID / GRAPH_D1 / GRAPH_SCOPE / GRAPH_TENANT_ID / HYPERDRIVE /
+   SS_GRAPH_CLIENT_SECRET / SS_GRAPH_TOKEN_KEK）が `wrangler.jsonc` に 1 つも
+   宣言されていない（`d1_databases` も `hyperdrive` も `secrets_store_secrets`
+   も無い）。
+4. 実際に deploy されるのは SvelteKit のページ 1 枚と、`/xrpc/[...path]` を
+   MCP router へ中継する 80 行の handler だけである。
+5. そのページは route 数・route 一覧・var 一覧を literal のオブジェクトとして
+   持ち、隣の `wrangler.jsonc` を読んでいなかった。一度は `Routes 0` /
+   `No public route is declared` と表示していた（設定は route 2・var 16 を
+   宣言していた）。2026-08-16 に手で書き直されたが、**手で同期し続けるしかない
+   形**は残っていた。
+
+この workspace の正本言語は cljs と kotoba である（superproject CLAUDE.md の
+runtime 順序: kotoba wasm > clojurewasm > ClojureScript > nbb）。TypeScript は
+そこに無い。
+
+## Decision
+
+**appview を ClojureScript に移し、appview の TypeScript と Svelte を撤去する。**
+
+    src/cowork/route.cljc    判断（どの handler が答えるか）
+    src/cowork/view.cljc     ページ（jp-go-dds の hiccup）
+    src/cowork/worker.cljs   Request/Response に触る唯一の層
+            ↓ shadow-cljs :target :esm
+    dist/worker.js           wrangler.jsonc の main が指すもの
+
+先例は同じ org の `app-ongakuka`（2026-08-18、同型の移行）と
+`cloud-itonami-marketplace-listing`。入口を `.kotoba` ではなく cljs に置くのは
+ADR-2606290000 の判断で、kotoba の ingress capability が `:native-aot` /
+`:wasm-aot` とも pending だからである。判断を `.cljc` に切り出してあるのは、
+ブラウザもビルドも無しにテストするためであり、ingress が qualify した時に
+最初に `.kotoba` へ移る部分だからでもある。
+
+### 移行の範囲は「deploy されていた面」である
+
+**deploy されていた 3 経路だけを移した** —— `GET /`、`POST /xrpc/*`、
+`OPTIONS /xrpc/*`。`/health` は足していない: SvelteKit 側に無かったので、
+足すと `/health` の応答が 404 から 200 に変わる。移行は deploy 済みの意味を
+変える場所ではない。
+
+client から見た status は移行前後で同じである。意図的な差分は 5 つで、README に
+表で書いた:
+
+- 上流に届かないとき: 例外が抜けて SvelteKit の 500 HTML エラーページ →
+  **502 JSON**（中継先の障害を自分の crash と同じ形で出さない）
+- `x-etzhayyim-bff`: `sveltekit-edge-bff` → `cljs-esm-worker`（SvelteKit はもう
+  無い。名乗りを実態に合わせた）
+- 上流へ載せ替えるヘッダから `content-length` を落とす（本文は jsonrpc の封筒に
+  包み直されて長さが変わるので、元の長さを付け直すのは実装のバグの側）
+- 404 / 405 の本文が SvelteKit の error envelope から `{\"error\":…}` の JSON に
+  なる（status と `allow` ヘッダは同じ）
+- `GET /` に `cache-control: public, max-age=60` を付ける（移行前は未指定）
+
+`POST /xrpc/*` の応答と `OPTIONS` の 204 は、status・本文・ヘッダとも移行前と
+同じ形である。
+
+`authorization` の透過、`/xrpc/a/b` を nsid としてそのまま中継すること
+（SvelteKit の `[...path]` は rest parameter だった）、`/xrpc/` が
+`{\"error\":\"Missing XRPC method\"}` の 400 になることは移行前のままである。
+
+### 持ち越さなかった 16 経路（黙って消していない）
+
+app.ts の 16 tool（mailList / mailGet / mailDraft / teamsChannelList /
+teamsMessageList / filesList / filesGet / calendarList / userGet / userList /
+graphActorGet / graphQuery / graphMvQuery / sendTeamsMessage /
+listMyFormTasks / sendBpmnGuidance）は**移していない**。理由は 16 件とも同じで、
+上記 Context 3 の測定である —— binding が 1 つも宣言されていない。
+
+**上流ホスト自体は生きている**（`graph.microsoft.com` /
+`login.microsoftonline.com` とも A レコードあり。実測 2026-08-18）。死んでいる
+のは宛先ではなく credential と DB の側である。動かない経路を移植して
+『移行済み』と言わないため持ち越さず、必要になった時点で binding の宣言と
+テストを伴って戻す。この一覧の実体は `cowork.route/not-carried-over` の 1 箇所
+だけにあり、ページも README も検証器もそこを読む。
+
+### `kotoba/` は移していない
+
+`kotoba/` は TypeScript のまま 5 本残る。appview ではなく `@etzhayyim/sdk` に
+対する product-front ライブラリで、wrangler は deploy しない。**移植の oracle
+が取れない**のが理由である: 依存 2 本が git URL で、その準備が入れ子 install を
+起こし npm 11.16.0 が `EALLOWSCRIPTS` で拒否するので、移植前の振る舞いを走らせて
+比べることができない。別の決定として別途扱う。
+
+したがって repo 全体の TypeScript/Svelte は 9 本（`.ts` 8 + `.svelte` 1）から
+`.ts` 5 本になったのであって、0 本にはなっていない。検証器は `kotoba-ts-files` claim でこの 5 本を固定しており、
+README が『TypeScript は無い』と読めるようになった時点で落ちる。
+
+### これで消えた欠陥
+
+- Context 1・2 は構造的に消えた。`main` が指す bundle は `src/` から
+  コンパイルされる（検証器が shadow の出力先・wrangler の main・export の
+  ns 名の 3 つが噛み合うことを検査する）。
+- Context 5 も構造的に消えた。ページは route 表・env のキー・持ち越さなかった
+  一覧を**引数で受け取って**描く。件数も `(count routes)` であって literal では
+  ない。表示と実際に答えるものが同じ 1 つの値から出る。
+- Context 3・4 は消えていない（binding は相変わらず無い）。移行はそれを直さない。
+  直したのは『動くように見える 882 行が置いてある』ことの方である。
+
+### UI
+
+基盤は jp-go-digital-design-system（skill kotoba-uiux が定める新規 UI の base）。
+色・寸法は `--hig-*` トークン契約のみ、app 固有 CSS は 3 行。CSS は
+`shadow.resource/inline` で bundle に焼く（design system の外部リクエストゼロ
+方針）。決定論的 audit で 100.00 / 100（gate 95）。
+
+## 検証（この ADR を書いた時点で実際に通したもの）
+
+- `cowork.route-test`: 6 tests / 56 assertions、0 failures（nbb、ビルド不要）
+- ページ描画 → design-quality score 100.00、gate 95 PASS
+- `scripts/verify-docs-claims.cljs`: 18 claim すべて PASS、exit 0
+- **bundle をビルドし、実際に叩いた。** resource guard 経由の
+  `shadow-cljs release worker` が `55 files, 12 compiled, 0 warnings, 104.72s` で
+  通り、`dist/worker.js`（246,914 バイト）を出した。
+  `scripts/smoke-worker.cljs` がそれを import して **21 項目すべて PASS**:
+  default export が fetch を持つ / `GET /` が 200 の HTML で route 表の path と
+  件数（`公開ルート 3 件`）を載せている / 持ち越さなかった 16 tool を全部名指し
+  している / env のキーは出て値は出ない / 移行前の偽の文（`No public route is
+  declared`）が無い / DADS の CSS が bundle に焼かれている / `POST /xrpc/` が
+  400 で本文が `Missing XRPC method` / `OPTIONS` が 204 / 未知パスが 404 /
+  `/health` が 404（足していない）/ 誤 method が 405 で `allow` を名乗る /
+  上流に届かないとき 502 で `MCP router unreachable` と言う。
+  **これがこの repo で唯一 deploy される成果物に触る検査である。**
+
+## 検査が落ちることを確かめた —— そして 2 つが落ちなかった
+
+**gate は緑を見ただけでは landed としない。** 各 gate について、それが読むものを
+実際に壊し、正しい検査が赤くなることを見てから戻した。外した mutation（検査が
+読んでいない別の場所を壊したもの）の赤は実演と数えない。全 mutation の記録は
+docs/operator-quickstart.md §7。**落ちなかった 2 件をここに書く。**
+
+### 1. 『bundle がビルドできる』は検査ではなかった
+
+`worker.cljs` の `route/dispatch` を存在しない var に改名してビルドしたところ、
+shadow-cljs は `WARNING #1 - :undeclared-var` を印字して **exit 0** で終わり、
+`dist/worker.js` を**壊れた bundle で上書きした**（最初のリクエストで
+`Cannot read properties of undefined (reading 'h')` を投げる）。つまり
+『release が通った』は**落ちようがない**主張だった。
+
+**直そうとして、もう一度同じ形の誤りを踏んだ。** `:build-options
+{:warnings-as-errors true}` は shadow が読まない場所で、黙って無視され、
+mutated build はまた exit 0 で通った —— **『落ちない検査』を直す変更が、それ自身
+落ちない検査だった。** shadow の実装（`shadow/build/compiler.clj` の
+`should-warning-throw?` が `[:compiler-options :warnings-as-errors]` を引く）を
+読んで置き場所を直し、そこで初めて **rc=1 / `ERROR ... Use of undeclared Var`**
+になり、しかも **`dist/worker.js` が 1 バイトも書き換わらない**（sha 不変）こと
+まで確かめた。戻すと同一 sha の bundle が再生成され smoke は 21/21 で緑に戻る。
+
+**このとき discriminate したのは smoke だけである** —— 壊れた bundle に対して
+`UNDETERMINED ... could not exercise the bundle` を出して **exit 2**（0 とも 1
+とも別）で終わり、合格を報告するのを拒否した。**gate を 2 本持っていたことが
+効いた。**
+
+### 2. design-quality の gate は design system の欠落に鈍い
+
+`render` に渡す DADS の CSS を空にしても score は 100.00 → **96.63** にしか
+落ちず、gate 95 を割らなかった（`jp-go-dds.page` が safe-area / tap-target /
+responsive を持つ `ext-css` を `:css` とは別に inline するため）。**壊したのに
+緑だったものを成功に読み替えない。** gate が実際に赤くなるのは
+`jp-go-dds.page` を通さず shell を手書きした場合で、そこでは 56.18 < 95 で
+FAIL する。
+
+## Consequences
+
+- appview の TypeScript / Svelte は 4 本から 0 本、正本言語（`.cljs`/`.cljc`）が
+  0 本から 4 本になった。撤去した 8 パスに戻る場合と別名で入る場合を、別々の
+  claim が捕まえる。
+- 継承した 13 ファイルは 1 バイトも変わっていない（sha256 を検証器に固定）。
+  意図的に変更したのは `wrangler.jsonc` / `kotodama.jsonld` /
+  `MIGRATION-TODO.md` の 3 つで、README にその理由を書いた。
+- `compatibility_flags` の `nodejs_compat` / `nodejs_als` は**残した**。cljs の
+  bundle は node builtin を 1 つも import しないが、それは bundle を読んで
+  確かめたのであって flag 無しで workerd を起動して確かめたのではない。
+  検証していない撤去はしない。
+- ホストは相変わらず NXDOMAIN である（`cowork-graph.etzhayyim.com` /
+  `c0w0rkg1.etzhayyim.com` / `mcp.etzhayyim.com` の 3 つとも）。移行はそれを
+  直さない。deploy するか retire するかは別の決定。
+- `wrangler.jsonc` は `APP_DEPLOY_SHA: 06194f69d5d` を記録しているが、この sha は
+  ここでも抽出元 monorepo でも解決しない。**deploy は日付が付いているが再現
+  できない**という事実も、移行では直っていない。
+"}]

@@ -1,6 +1,10 @@
 # Migration TODO
 
 **Status**: 🔄 TRANSFORM — seed copied 2026-05-21, codemod pending.
+The cljs migration of 2026-08-18 (`docs/adr/0001`) removed the appview's
+TypeScript, which is where five of the six annotated violations lived; see
+§ "What the cljs migration changed" at the end. **No box below is ticked by
+it** — the charter review itself has still not happened.
 
 **Codemod required**: SBT↔SBT internal carve-out for commerce
 
@@ -62,3 +66,23 @@ Additional violations detected in re-scan:
 ```
 
 Lines annotated with `CHARTER-VIOLATION §substrate` comments.
+
+---
+
+## What the cljs migration changed (2026-08-18, docs/adr/0001)
+
+The appview was migrated from TypeScript/Svelte to ClojureScript and
+`appview/etzhayyim-wasm-cowork-graph-c0w0rkg1/src/app.ts` was **removed** —
+along with the whole `svelte/` tree. That file held every line the codemod scan
+below annotated (`app.ts:12/538/561/584/673`, the Kysely/RisingWave imports and
+calls), so those five annotations now point at code that is not in this
+repository. The RisingWave/Kysely *client* is gone; whether the surrounding
+architecture is charter-aligned is a different question and is still open.
+
+Unchanged by the migration, and still true:
+
+- the seven boxes above are **not** ticked, and the manual Charter Rider review
+  they stand for has not been performed;
+- `kotoba/` is untouched — it is still TypeScript against `@etzhayyim/sdk`, and
+  its test suite has never been run on this machine (`npm install` fails with
+  `EALLOWSCRIPTS`; see `docs/operator-quickstart.md`).
