@@ -15,7 +15,7 @@
   not a redesign of it. `/health` is deliberately absent because the SvelteKit
   app had no such route, and adding one would change `/health` from 404 to 200
   — the migration is not the place to change what the deployment answers."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (def routes
   "The public surface, as data. The landing page renders THIS, so a route that
@@ -87,7 +87,7 @@
 
   HEAD は GET として扱う（Workers が body を落とす）。"
   [method path]
-  (let [m (keyword (str/lower-case (or method "GET")))
+  (let [m (keyword (str/lower (or method "GET")))
         m (if (= m :head) :get m)
         rest' (xrpc-rest path)]
     (cond
