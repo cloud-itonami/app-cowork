@@ -24,7 +24,7 @@
 (require '["node:fs" :as fs]
          '["node:child_process" :as cp]
          '["node:crypto" :as crypto]
-         '[clojure.string :as str])
+         '[kotoba.lang.text :as str])
 
 (def root (or (first (remove #(str/starts-with? % "--") *command-line-args*)) "."))
 (def APP "appview/etzhayyim-wasm-cowork-graph-c0w0rkg1")
