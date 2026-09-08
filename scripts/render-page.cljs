@@ -7,7 +7,7 @@
 ;; Exit:   0 書けた · 2 書けなかった（CSS が読めない等）
 
 (require '["node:fs" :as fs]
-         '[clojure.string :as str]
+         '[kotoba.lang.text :as str]
          '[cowork.view :as view]
          '[cowork.route :as route])
 
