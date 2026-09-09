@@ -30,7 +30,7 @@
 (def APP "appview/etzhayyim-wasm-cowork-graph-c0w0rkg1")
 
 (def claims
-  {:tracked-files 29
+  {:tracked-files 30
    :appview-ts-files 0
    :canonical-files 4
    :kotoba-ts-files 5              ; NOT migrated -- see README "kotoba/ は移していない"
