@@ -1,9 +1,9 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; render-page — ページを 1 枚の HTML に書き出す。決定論的 audit
 ;; (kotoba-lang/design-quality) の入力を作るためだけのもので、Worker は
 ;; これを使わない（Worker は shadow.resource/inline で CSS を焼く）。
 ;;
-;; Usage:  nbb scripts/render-page.cljs <out.html> [--dds <path>]
+;; Usage:  kbb --backend sci scripts/render-page.cljk <out.html> [--dds <path>]
 ;; Exit:   0 書けた · 2 書けなかった（CSS が読めない等）
 
 (require '["node:fs" :as fs]
