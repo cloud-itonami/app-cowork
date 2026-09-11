@@ -1,4 +1,4 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; verify-docs-claims — re-derive every number README.md and
 ;; docs/operator-quickstart.md state, from the tree itself, and fail when the
 ;; tree and the prose disagree.
@@ -18,7 +18,7 @@
 ;;   * the kotoba/ package is STILL TypeScript. The migration did not touch it,
 ;;     so a claim of "no TypeScript here" would be false. The count is pinned.
 ;;
-;; Usage:  nbb scripts/verify-docs-claims.cljs [<dir>]     (<dir> FIRST, default ".")
+;; Usage:  kbb --backend sci scripts/verify-docs-claims.cljk [<dir>]     (<dir> FIRST, default ".")
 ;; Exit:   0 every claim holds · 1 a claim is false · 2 could not answer
 
 (require '["node:fs" :as fs]

@@ -22,7 +22,7 @@
 git clone git@github.com:cloud-itonami/app-cowork.git
 cd app-cowork
 REPO=$PWD
-npx --yes nbb scripts/verify-docs-claims.cljs .
+npx --yes kbb --backend sci scripts/verify-docs-claims.cljk .
 ```
 
 実際の出力:
@@ -122,7 +122,7 @@ cat > /tmp/run.cljs <<'EOF'
 (require '[cljs.test :refer [run-tests]] 'cowork.route-test)
 (run-tests 'cowork.route-test)
 EOF
-npx --yes nbb --classpath "$CP" /tmp/run.cljs
+npx --yes kbb --backend sci --classpath "$CP" /tmp/run.cljs
 ```
 
 実際の出力:
@@ -147,9 +147,9 @@ Ran 6 tests containing 56 assertions.
 K=~/github/com-junkawasaki/orgs/kotoba-lang
 CP="src:$K/jp-go-digital-design-system/src:$K/html/src:$K/css/src"
 DDS="$K/jp-go-digital-design-system" \
-  npx --yes nbb --classpath "$CP" scripts/render-page.cljs /tmp/cowork-page.html
+  npx --yes kbb --backend sci --classpath "$CP" scripts/render-page.cljs /tmp/cowork-page.html
 
-cd $K/design-quality && npx --yes nbb -m design-quality.cli score /tmp/cowork-page.html --min 95
+cd $K/design-quality && npx --yes kbb --backend sci -m design-quality.cli score /tmp/cowork-page.html --min 95
 ```
 
 実際の出力（末尾）:
@@ -170,7 +170,7 @@ resource governor）。直接叩かず、必ず guard 経由で:
 ```bash
 cd "$REPO"
 node ~/github/com-junkawasaki/scripts/resource-guard.mjs run build -- \
-  npx --yes shadow-cljs release worker
+  npx --yes amu compile --target wasm32-browser worker
 ls -la dist/worker.js
 ```
 
@@ -191,7 +191,7 @@ lock を他セッションが持っていると exit 2 で拒否される。**�
 ここが deploy されるものに触る唯一の検査である。
 
 ```bash
-cd "$REPO" && npx --yes nbb scripts/smoke-worker.cljs dist/worker.js
+cd "$REPO" && npx --yes kbb --backend sci scripts/smoke-worker.cljk dist/worker.js
 ```
 
 ```
@@ -222,7 +222,7 @@ OK	the built bundle answers as the route table says
 **bundle が無ければ exit 2**（「判定できなかった」であって合格ではない）:
 
 ```
-$ npx --yes nbb scripts/smoke-worker.cljs dist/worker.js     # bundle を退避して実行
+$ npx --yes kbb --backend sci scripts/smoke-worker.cljk dist/worker.js     # bundle を退避して実行
 UNDETERMINED	no bundle at /private/tmp/app-cowork-cljs/dist/worker.js
 Refusing to report a pass: build it first (see docs/operator-quickstart.md §5).
 $ echo $?

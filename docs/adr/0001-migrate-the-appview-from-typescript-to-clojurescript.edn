@@ -133,7 +133,7 @@ README が『TypeScript は無い』と読めるようになった時点で落�
 - ページ描画 → design-quality score 100.00、gate 95 PASS
 - `scripts/verify-docs-claims.cljs`: 18 claim すべて PASS、exit 0
 - **bundle をビルドし、実際に叩いた。** resource guard 経由の
-  `shadow-cljs release worker` が `55 files, 12 compiled, 0 warnings, 104.72s` で
+  `amu compile --target wasm32-browser worker` が `55 files, 12 compiled, 0 warnings, 104.72s` で
   通り、`dist/worker.js`（246,914 バイト）を出した。
   `scripts/smoke-worker.cljs` がそれを import して **21 項目すべて PASS**:
   default export が fetch を持つ / `GET /` が 200 の HTML で route 表の path と
