@@ -8,7 +8,7 @@ it** — the charter review itself has still not happened.
 
 **Codemod required**: SBT↔SBT internal carve-out for commerce
 
-## Substrate-boundary checks (per CLAUDE.md)
+## Substrate-boundary checks (per AGENTS.md)
 
 This seed was copied verbatim from `etzhayyim-root/60-apps/etzhayyim-project-cowork`.
 The following constitutional invariants are likely violated and MUST be
@@ -33,7 +33,7 @@ remediated before this app can be considered etzhayyim-aligned:
 ## Reference
 
 - Constitution wave ADRs: ADR-2605192100 / 2605192115 / 2605192130 / 2605192200
-- Substrate boundary table: `/CLAUDE.md` § "Substrate boundary"
+- Substrate boundary table: `/AGENTS.md` § "Substrate boundary"
 - Charter Rider: `/CHARTER-RIDER.md`
 
 ---
