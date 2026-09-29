@@ -34,7 +34,7 @@ deploy していた**。移行前に測った事実:
    宣言していた）。2026-08-16 に手で書き直されたが、**手で同期し続けるしかない
    形**は残っていた。
 
-この workspace の正本言語は cljs と kotoba である（superproject CLAUDE.md の
+この workspace の正本言語は cljs と kotoba である（superproject AGENTS.md の
 runtime 順序: kotoba wasm > clojurewasm > ClojureScript > nbb）。TypeScript は
 そこに無い。
 
